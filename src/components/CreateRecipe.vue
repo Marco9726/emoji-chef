@@ -7,7 +7,6 @@ export default {
       return {
          config,
          store,
-         saveButton: null,
          ingredients: [
             '🥩',
             '🍅',
@@ -23,7 +22,6 @@ export default {
             '🥔',
          ],
          bowlSlots: [],
-         STORAGE_KEY: 'saved_recipes',
          // parametri richiesta API
          BASE_URL: 'https://api.openai.com/v1',
          CHAT_ENDPONT: '/chat/completions',
@@ -31,8 +29,6 @@ export default {
          APY_KEY: '',
          temperature: 0.2,
          MODEL: 'gpt-3.5-turbo',
-         //dati risposta chiamata
-         recipe: {},
       };
    },
    methods: {
@@ -75,21 +71,21 @@ export default {
             ],
          });
 
-         this.recipe = JSON.parse(recipeResponse.choices[0].message.content);
-         this.recipe.emoji = this.bowlSlots.join(' ');
-         console.log(this.recipe.emoji);
-         console.log(this.recipe.ingredienti);
+         store.recipe = JSON.parse(recipeResponse.choices[0].message.content);
+         store.recipe.emoji = this.bowlSlots.join(' ');
+         console.log(store.recipe.emoji);
+         console.log(store.recipe.ingredienti);
 
          //3) chiamata per generare l'immagine
          const imageResponse = await this.makeRequest(this.IMAGE_ENDPOINT, {
-            prompt: this.recipe.titolo,
+            prompt: store.recipe.titolo,
             n: 1,
             size: '512x512',
             response_format: 'b64_json',
          });
 
          const imageUrl = imageResponse.data[0].b64_json;
-         this.recipe.imageUrl = `data:image/png;base64, ${imageUrl}`;
+         store.recipe.imageUrl = `data:image/png;base64, ${imageUrl}`;
 
          //4) nasconto il loader
          LOADING.classList.add('d-none');
@@ -98,48 +94,16 @@ export default {
 
          this.clearBowl();
       },
-      hideModal() {
-         const MODAL = document.querySelector('.overlay-modal');
-         MODAL.classList.add('d-none');
-         this.saveButton.dataset.action = 'save';
-      },
       clearBowl() {
          this.bowlSlots = [];
-      },
-      setModalAction() {
-         if (this.saveButton.dataset.action == 'save') {
-            this.saveRecipe();
-            this.saveButton.dataset.action = 'remove';
-         } else {
-            this.removeRecipe();
-            this.saveButton.dataset.action = 'save';
-         }
-      },
-      saveRecipe() {
-         store.savedRecipes.push(this.recipe);
-         this.updateStorage();
-      },
-      removeRecipe() {
-         const index = this.store.savedRecipes.indexOf(this.recipe);
-         this.store.savedRecipes.splice(index, 1);
-         this.updateStorage();
-      },
-      updateStorage() {
-         localStorage.setItem(
-            this.STORAGE_KEY,
-            JSON.stringify(this.store.savedRecipes)
-         );
       },
    },
    mounted() {
       this.APY_KEY = config.KEY;
-      // this.saveRecipeButton = document.getElementById('save');
-      // this.removeRecipeButton = document.getElementById('removeSave');
-      this.saveButton = document.querySelector('.modal-save-button');
 
-      const storage = localStorage.getItem(this.STORAGE_KEY);
+      const storage = localStorage.getItem(this.store.STORAGE_KEY);
       if (storage) {
-         this.savedRecipes = JSON.parse(storage);
+         this.store.savedRecipes = JSON.parse(storage);
       }
    },
 };
@@ -151,48 +115,6 @@ export default {
       <!-- loading-->
       <div class="overlay overlay-loading d-none">
          <img src="../../public/cook.gif" alt="loading" />
-      </div>
-
-      <!-- modal -->
-      <div class="overlay overlay-modal d-none">
-         <div class="my-modal border-blue bg-white">
-            <!-- close button -->
-            <div class="modal-close-button border-blue" @click="hideModal">
-               <img src="../../public/close-button.svg" alt="close-button" />
-            </div>
-            <!-- save button -->
-            <div
-               class="modal-save-button"
-               data-action="save"
-               @click="setModalAction()"
-            >
-               <i class="fa-solid fa-bookmark action-save"></i>
-               <i class="fa-regular fa-bookmark action-remove"></i>
-            </div>
-            <div class="recipe-image h-50">
-               <img :src="recipe.imageUrl" alt="" class="h-100 w-100" />
-            </div>
-            <div class="recipe-content p-3">
-               <h2>{{ this.recipe.titolo }}</h2>
-               <div class="mb-2">
-                  <strong>Ingredienti: </strong>
-                  <ul>
-                     <li
-                        v-for="(item, index) in recipe.ingredienti"
-                        :key="index"
-                     >
-                        {{ item }}
-                     </li>
-                  </ul>
-               </div>
-               <div>
-                  <strong>Procedimento: </strong>
-                  <p>
-                     {{ this.recipe.procedimento }}
-                  </p>
-               </div>
-            </div>
-         </div>
       </div>
 
       <!-- griglia ingredienti -->
@@ -271,76 +193,9 @@ export default {
    }
 }
 
-.overlay {
-   position: fixed;
-   top: 0;
-   right: 0;
-   bottom: 0;
-   left: 0;
-   background-color: rgba(255, 255, 255, 0.8);
-   z-index: 3;
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   margin-bottom: 0;
-   &.overlay-loading {
-      img {
-         width: 200px;
-      }
-   }
-   &.overlay-modal {
-      .my-modal {
-         position: relative;
-         height: 90%;
-         width: 90%;
-         overflow-y: auto;
-         overscroll-behavior: contain;
-
-         .modal-close-button {
-            background-color: #eeb9f5;
-            border-radius: 100%;
-            height: 2rem;
-            width: 2rem;
-            display: flex;
-            cursor: pointer;
-            padding: 0.3rem;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-         }
-
-         .modal-save-button {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            font-size: 3rem;
-            color: #1212b2;
-            cursor: pointer;
-            transition: color 0.2s ease-in-out;
-         }
-
-         [data-action='save'] > :not(.action-remove) {
-            display: none;
-         }
-
-         [data-action='remove'] > :not(.action-save) {
-            display: none;
-         }
-
-         .recipe-image {
-            background-image: url('../../public/loader.gif');
-            background-position: center;
-            background-repeat: no-repeat;
-         }
-
-         .recipe-content {
-            text-align: left;
-            // color: #1212b2;
-            h2 {
-               font-weight: 700;
-            }
-         }
-      }
+.overlay-loading {
+   img {
+      width: 200px;
    }
 }
 

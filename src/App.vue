@@ -2,11 +2,13 @@
 import Header from './components/Header.vue';
 import CreateRecipe from './components/CreateRecipe.vue';
 import SavedRecipes from './components/SavedRecipes.vue';
+import RecipeModal from './components/RecipeModal.vue';
 export default {
    components: {
       Header,
       CreateRecipe,
       SavedRecipes,
+      RecipeModal,
    },
 };
 </script>
@@ -15,6 +17,8 @@ export default {
    <Header></Header>
 
    <main class="pt-4">
+      <!-- modal  -->
+      <RecipeModal></RecipeModal>
       <!-- CreateRecipe -->
       <CreateRecipe></CreateRecipe>
       <!-- SavedRecipes -->

@@ -7,6 +7,16 @@ export default {
          store,
       };
    },
+   methods: {
+      showRecipeModal(index) {
+         const MODAL = document.querySelector('.overlay-modal');
+         const SAVE_BUTTON = document.querySelector('.modal-save-button');
+         this.store.recipe = this.store.savedRecipes[index];
+         MODAL.classList.remove('d-none');
+         SAVE_BUTTON.dataset.action = 'remove';
+         console.log(this.store.savedRecipes[index]);
+      },
+   },
    mounted() {},
 };
 </script>
@@ -25,6 +35,7 @@ export default {
             class="recipe-card border-blue d-flex mb-3"
             v-for="(item, index) in store.savedRecipes"
             :key="index"
+            @click="showRecipeModal(index)"
          >
             <div class="thumbnail">
                <img
@@ -52,7 +63,7 @@ section.savedRecipes {
       overflow-y: scroll;
       article.recipe-card {
          border-radius: 1.5rem;
-
+         cursor: pointer;
          .thumbnail {
             width: calc(100% / 3);
             img {
@@ -66,6 +77,11 @@ section.savedRecipes {
             h4 {
                font-weight: 600;
                color: #2619aa;
+               line-height: 1.2rem;
+            }
+
+            .emoji {
+               font-size: 1.5rem;
             }
          }
       }
