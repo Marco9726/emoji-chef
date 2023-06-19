@@ -24,6 +24,7 @@ export default {
          }
       },
       saveRecipe() {
+         this.store.recipe.imageUrl = this.optimizeBase64Image(0.3);
          this.store.savedRecipes.push(store.recipe);
          this.updateStorage();
       },
@@ -37,6 +38,21 @@ export default {
             this.store.STORAGE_KEY,
             JSON.stringify(this.store.savedRecipes)
          );
+      },
+      optimizeBase64Image(quality) {
+         const image = document
+            .querySelector('.recipe-image')
+            .querySelector('img');
+         console.log(image);
+
+         const canvas = document.createElement('canvas');
+         canvas.height = image.naturalHeight;
+         canvas.width = image.naturalWidth;
+
+         const context = canvas.getContext('2d');
+         context.drawImage(image, 0, 0);
+
+         return canvas.toDataURL('image/jpeg', quality);
       },
    },
    mounted() {

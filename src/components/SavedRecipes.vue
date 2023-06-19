@@ -46,7 +46,7 @@ export default {
             </div>
             <div class="card-content p-3 bg-white text-start">
                <div class="title">
-                  <h4>c{{ item.titolo }}</h4>
+                  <h4>{{ item.titolo }}</h4>
                </div>
                <div class="emoji">
                   {{ item.emoji }}
